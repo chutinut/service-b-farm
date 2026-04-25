@@ -8,6 +8,22 @@ import * as bodyParser from "body-parser";
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+  const corsOriginConfig = configService.get<string>(
+    "CORS_ORIGIN",
+    "http://localhost:3000",
+  );
+
+  const corsOrigins = corsOriginConfig
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  app.enableCors({
+    origin: corsOrigins,
+    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  });
 
   app.use(bodyParser.json({ limit: "5mb" }));
   app.use(bodyParser.urlencoded({ limit: "5mb", extended: true }));
